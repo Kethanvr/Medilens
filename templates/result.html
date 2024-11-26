@@ -57,8 +57,78 @@
     <!-- Main Content -->
     <main class="container py-5">
         <h1 class="text-center" style="color: #00bf63;">Extraction Results</h1>
+        <!-- Product Image -->
+<div class="card p-4 shadow mt-4">
+    <h3 style="color: #00bf63;">Scanned Product Image</h3>
+    <div class="text-center mb-5">
+        <h3>Uploaded Image</h3>
+        {% if uploaded_image %}
+        <img src="{{ url_for('uploaded_file', filename=uploaded_image) }}" alt="Uploaded Image" class="img-fluid shadow" style="max-width: 400px;">
+
+
+        {% else %}
+        <p class="text-danger">No image available</p>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Audio Section -->
+<div class="card p-4 shadow mt-4">
+    <h3 style="color: #00bf63;">Audio Features</h3>
+    <pre>{{ result.full_text }}</pre>
+
+    <!-- Dynamic Audio Rendering -->
+    <audio id="audio-player" controls class="mt-3">
+        <source id="audio-source" src="/generate-audio/full_text" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- Generate & Download Button -->
+    <div class="mt-3">
+        <button class="btn btn-success" onclick="playGeneratedAudio()">Generate & Play Audio</button>
+        <a href="/generate-audio/full_text" class="btn btn-primary">Download Full Text Audio</a>
+    </div>
+</div>
+
+<script>
+    // Function to dynamically generate and play audio
+    async function playGeneratedAudio() {
+        const audioSource = document.getElementById('audio-source');
+        const audioPlayer = document.getElementById('audio-player');
+
+        try {
+            // Fetch audio to ensure it's available
+            const response = await fetch('/generate-audio/full_text');
+            if (!response.ok) throw new Error('Failed to fetch audio.');
+
+            // Update the audio source dynamically
+            const audioBlob = await response.blob();
+            const audioURL = URL.createObjectURL(audioBlob);
+            audioSource.src = audioURL;
+            audioPlayer.load();
+            audioPlayer.play(); // Auto-play the generated audio
+        } catch (error) {
+            alert('Error generating audio. Please try again.');
+            console.error(error);
+        }
+    }
+</script>
+
+
         <div class="card p-4 shadow mt-4">
             <h3 class="text-center text-success">Extracted Medicine Information</h3>
+            <!-- Display Uploaded Image -->
+        <div class="text-center mb-5">
+            <h3>Uploaded Image</h3>
+            {% if uploaded_image %}
+            <img src="{{ url_for('uploaded_file', filename=uploaded_image) }}" alt="Uploaded Image" class="img-fluid shadow" style="max-width: 400px;">
+
+
+            {% else %}
+            <p class="text-danger">No image available</p>
+            {% endif %}
+        </div>
             <table class="table">
                 <thead>
                     <tr>
@@ -84,13 +154,13 @@
             </table>
         </div>
 
-        <!-- Full Text -->
+        <!-- Full Text
         <div class="card p-4 shadow mt-4">
             <h3 style="color: #00bf63;">Extracted Text from Image</h3>
             <pre>{{ result.full_text }}</pre>
             <button class="btn btn-success mt-3" onclick="playAudio('{{ result.full_text }}')">Play Full Text</button>
             <button class="btn btn-primary mt-3" onclick="downloadAudio('full_text')">Download Full Text</button>
-        </div>
+        </div> -->
 
         <div class="text-center mt-5">
             <a href="/product" class="btn btn-dark">Upload Another Image</a>
