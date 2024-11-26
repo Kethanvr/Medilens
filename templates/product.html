@@ -8,8 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body style="font-family: 'Poppins', sans-serif; background-color: #f8f9fa;">
 
@@ -20,16 +19,12 @@
         </div>
         <nav>
             <ul class="d-flex list-unstyled gap-4">
-                <li><a href="product.html" class="text-dark text-decoration-none">Home</a></li>
+                <li><a href="/" class="text-dark text-decoration-none">Home</a></li>
                 <li><a href="#" class="text-dark text-decoration-none">Menu</a></li>
                 <li><a href="#" class="text-dark text-decoration-none">Upload</a></li>
                 <li><a href="#" class="text-dark text-decoration-none">Contact us</a></li>
             </ul>
         </nav>
-        <div>
-            <button class="btn btn-outline-dark">Login</button>
-            <button class="btn btn-dark">Sign Up</button>
-        </div>
     </header>
 
     <!-- Main Content -->
@@ -46,9 +41,19 @@
                     <form id="upload-form" enctype="multipart/form-data">
                         <!-- File Upload -->
                         <input type="file" id="imageInput" accept="image/*" class="form-control mb-3">
-                        <button type="button" class="btn btn-dark w-100 mb-2" onclick="uploadImage()">Upload Image</button>
                         
-                        <!-- Camera Button -->
+                        <!-- Language Selection Dropdown -->
+                        <div class="dropdown mt-3">
+                            <label for="language" class="form-label">Select Preferred Language:</label>
+                            <select id="language" class="form-select">
+                                <option value="en" selected>English</option>
+                                <option value="kn">Kannada</option>
+                                <option value="te">Telugu</option>
+                            </select>
+                        </div>
+
+                        <!-- Upload and Camera Buttons -->
+                        <button type="button" class="btn btn-dark w-100 mb-2 mt-3" onclick="uploadImage()">Upload Image</button>
                         <button type="button" class="btn btn-outline-dark w-100" onclick="openCamera()">Open Camera</button>
                     </form>
                 </div>
@@ -61,63 +66,6 @@
             <button class="btn btn-success mt-3" onclick="captureImage()">Capture</button>
             <canvas id="camera-canvas" style="display: none;"></canvas>
         </div>
-
-        <!-- OCR Result Section -->
-        <div id="ocr-result" class="mt-5">
-            <h3 class="text-center" style="color: #00bf63;">Extracted Medicine Information</h3>
-            <div class="card mt-3 p-4 shadow">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Attribute</th>
-                            <th>Value</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Name</strong></td>
-                            <td id="medicine-name">No Information</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Manufacturer</strong></td>
-                            <td id="medicine-manufacturer">No Information</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Composition</strong></td>
-                            <td id="medicine-composition">No Information</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Expiry Date</strong></td>
-                            <td id="medicine-expiry-date">No Information</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Batch Number</strong></td>
-                            <td id="medicine-batch">No Information</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Price</strong></td>
-                            <td id="medicine-price">No Information</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Warnings</strong></td>
-                            <td id="medicine-warnings">No Information</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Storage Instructions</strong></td>
-                            <td id="medicine-storage">No Information</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Full Extracted Text Section -->
-        <div id="full-text-section" class="mt-5">
-            <h3 class="text-center" style="color: #00bf63;">Extracted Text from Image</h3>
-            <div class="card mt-3 p-4 shadow">
-                <pre id="extracted-full-text" class="text-muted">No text extracted yet.</pre>
-            </div>
-        </div>
     </main>
 
     <!-- Footer -->
@@ -125,17 +73,14 @@
         <p>&copy; 2024 MediLens. All Rights Reserved.</p>
     </footer>
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let videoStream = null;
 
-        // Open the camera
+        // Open Camera Function
         function openCamera() {
             const video = document.getElementById('camera-preview');
             const cameraContainer = document.getElementById('camera-container');
-
-            // Display the camera container
             cameraContainer.style.display = 'block';
 
             navigator.mediaDevices.getUserMedia({ video: true })
@@ -143,84 +88,68 @@
                     videoStream = stream;
                     video.srcObject = stream;
                 })
-                .catch((error) => {
-                    console.error('Error accessing the camera:', error);
-                    alert('Unable to access the camera.');
-                });
+                .catch((error) => console.error('Error accessing the camera:', error));
         }
 
-        // Capture the image from the camera
+        // Capture Image from Camera
         function captureImage() {
             const video = document.getElementById('camera-preview');
             const canvas = document.getElementById('camera-canvas');
             const context = canvas.getContext('2d');
-
-            // Set canvas size to match video dimensions
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
 
-            // Draw the video frame onto the canvas
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            // Convert canvas to data URL
             const imageData = canvas.toDataURL('image/png');
-
-            // Stop the camera stream
             videoStream.getTracks().forEach((track) => track.stop());
-
-            // Hide the camera container
             document.getElementById('camera-container').style.display = 'none';
 
-            // Send the captured image to the backend
             uploadCapturedImage(imageData);
         }
 
-        // Upload the captured image
-        function uploadCapturedImage(imageData) {
-            const formData = new FormData();
-            formData.append('file', imageData);
-
-            fetch('/upload', {
-                method: 'POST',
-                body: formData,
-            })
-            .then((response) => response.json())
-            .then((data) => {
-                updateOCRResult(data);
-            })
-            .catch((error) => console.error('Error uploading captured image:', error));
-        }
-
-        // Upload a file image
-        function uploadImage() {
+        // Upload Image from File Input
+        async function uploadImage() {
             const input = document.getElementById('imageInput');
+            const language = document.getElementById('language').value; // Get selected language
             const formData = new FormData();
             formData.append('file', input.files[0]);
+            formData.append('language', language);
 
-            fetch('/upload', {
-                method: 'POST',
-                body: formData,
-            })
-            .then((response) => response.json())
-            .then((data) => {
-                updateOCRResult(data);
-            })
-            .catch((error) => console.error('Error uploading image:', error));
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+                if (response.ok) {
+                    window.location.href = '/result'; // Redirect to result page
+                } else {
+                    alert("Error processing the image. Please try again.");
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
 
-        // Update the OCR result in the table
-        function updateOCRResult(data) {
-            document.getElementById('medicine-name').textContent = data.name || "No Information";
-            document.getElementById('medicine-manufacturer').textContent = data.manufacturer || "No Information";
-            document.getElementById('medicine-composition').textContent = data.composition || "No Information";
-            document.getElementById('medicine-expiry-date').textContent = data.expiry_date || "No Information";
-            document.getElementById('medicine-batch').textContent = data.batch_number || "No Information";
-            document.getElementById('medicine-price').textContent = data.price || "No Information";
-            document.getElementById('medicine-warnings').textContent = data.warnings || "No Information";
-            document.getElementById('medicine-storage').textContent = data.storage_instructions || "No Information";
+        // Upload Captured Image from Camera
+        async function uploadCapturedImage(imageData) {
+            const language = document.getElementById('language').value; // Get selected language
+            const formData = new FormData();
+            formData.append('file', imageData);
+            formData.append('language', language);
 
-            // Update full text
-            document.getElementById('extracted-full-text').textContent = data.full_text || "No text extracted yet.";
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+                if (response.ok) {
+                    window.location.href = '/result'; // Redirect to result page
+                } else {
+                    alert("Error uploading the captured image. Please try again.");
+                }
+            } catch (error) {
+                console.error('Error uploading captured image:', error);
+            }
         }
     </script>
 </body>
